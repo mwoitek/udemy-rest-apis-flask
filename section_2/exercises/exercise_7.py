@@ -23,12 +23,13 @@ class Store:
 
     @staticmethod
     def store_details(store):
-        str_parts = [
-            store.name,
-            ", total stock price: ",
-            str(store.stock_price()),
-        ]
-        return "".join(str_parts)
+        return "".join(
+            [
+                store.name,
+                ", total stock price: ",
+                str(store.stock_price()),
+            ]
+        )
 
 
 store = Store("Test")
