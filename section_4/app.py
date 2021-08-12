@@ -5,13 +5,39 @@ from flask_restful import Resource
 app = Flask(__name__)
 api = Api(app)
 
+items = [
+    {
+        "name": "Keyboard",
+        "price": 200,
+    },
+    {
+        "name": "Mouse",
+        "price": 30.5,
+    },
+    {
+        "name": "Laptop",
+        "price": 3000,
+    },
+]
 
-class Student(Resource):
+
+class Item(Resource):
     def get(self, name):
-        return {"student": name}
+        for item in items:
+            if item["name"] == name:
+                return item
+        return {"item": None}, 404
+
+    def post(self, name):
+        item = {
+            "name": name,
+            "price": 12,
+        }
+        items.append(item)
+        return item, 201
 
 
-api.add_resource(Student, "/student/<string:name>")
+api.add_resource(Item, "/item/<string:name>")
 
 
 if __name__ == "__main__":
