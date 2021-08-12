@@ -30,7 +30,7 @@ api = Api(app)
 items = [
     {
         "name": "Keyboard",
-        "price": 200,
+        "price": 200.0,
     },
     {
         "name": "Mouse",
@@ -38,7 +38,7 @@ items = [
     },
     {
         "name": "Laptop",
-        "price": 3000,
+        "price": 3000.0,
     },
 ]
 
