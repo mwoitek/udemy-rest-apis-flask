@@ -76,6 +76,15 @@ class Item(Resource):
         items.append(item)
         return item, 201
 
+    def delete(self, name):
+        item = next(filter(lambda x: x["name"] == name, items), None)
+        if item is None:
+            return {"error": f"Item named {name} does not exist"}, 404
+
+        item_idx = items.index(item)
+        items.pop(item_idx)
+        return {"message": "Item successfully removed", "item": item}
+
 
 class ItemList(Resource):
     def get(self):
