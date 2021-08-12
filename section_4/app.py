@@ -85,6 +85,21 @@ class Item(Resource):
         items.pop(item_idx)
         return {"message": "Item successfully removed", "item": item}
 
+    def put(self, name):
+        request_data = request.get_json()
+
+        item = next(filter(lambda x: x["name"] == name, items), None)
+        if item is None:
+            new_item = {
+                "name": name,
+                "price": request_data["price"],
+            }
+            items.append(new_item)
+            return new_item, 201
+
+        item.update(request_data)
+        return {"message": "Item successfully updated", "item": item}
+
 
 class ItemList(Resource):
     def get(self):
