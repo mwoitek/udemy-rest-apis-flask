@@ -13,10 +13,13 @@ from security import get_current_user
 app = Flask(__name__)
 
 # Setup Flask-JWT-Extended
+# TODO Get the secret key from an environment variable
 app.config["JWT_SECRET_KEY"] = "my_secret_key"
 jwt = JWTManager(app)
 
 
+# TODO Add more callbacks like this so that every authentication-related error
+# is handled
 @jwt.expired_token_loader
 def my_expired_token_callback(jwt_header, jwt_payload):
     return jsonify({"error": "Token has expired"}), 401
@@ -69,6 +72,15 @@ def protected():
 
 
 class Item(Resource):
+    # Validate request data
+    parser = reqparse.RequestParser()
+    parser.add_argument(
+        "price",
+        type=float,
+        required=True,
+        help="Item price has to be specified",
+    )
+
     @staticmethod
     def find_item_by_name(name):
         return next(filter(lambda x: x["name"] == name, items), None)
@@ -85,16 +97,7 @@ class Item(Resource):
         if item:
             return {"error": f"An item named {name} already exists"}, 400
 
-        # Validate request data
-        parser = reqparse.RequestParser()
-        parser.add_argument(
-            "price",
-            type=float,
-            required=True,
-            help="Unable to create item with no price",
-        )
-        args = parser.parse_args(strict=True)
-
+        args = Item.parser.parse_args(strict=True)
         item = {
             "name": name,
             "price": args["price"],
@@ -102,8 +105,9 @@ class Item(Resource):
         items.append(item)
         return item, 201
 
+    @jwt_required()
     def delete(self, name):
-        item = next(filter(lambda x: x["name"] == name, items), None)
+        item = Item.find_item_by_name(name)
         if item is None:
             return {"error": f"Item named {name} does not exist"}, 404
 
@@ -114,19 +118,22 @@ class Item(Resource):
             "item": item,
         }
 
+    @jwt_required()
     def put(self, name):
-        request_data = request.get_json()
+        args = Item.parser.parse_args(strict=True)
 
-        item = next(filter(lambda x: x["name"] == name, items), None)
+        item = Item.find_item_by_name(name)
         if item is None:
-            new_item = {
+            # Create item
+            item = {
                 "name": name,
-                "price": request_data["price"],
+                "price": args["price"],
             }
-            items.append(new_item)
-            return new_item, 201
+            items.append(item)
+            return item, 201
 
-        item.update(request_data)
+        # Update item
+        item.update(args)
         return {
             "message": "Item successfully updated",
             "item": item,
