@@ -9,6 +9,7 @@ from flask_restful import Resource
 from flask_restful import reqparse
 from security import authenticate
 from security import get_current_user
+from user import UserRegister
 
 app = Flask(__name__)
 
@@ -147,6 +148,7 @@ class ItemList(Resource):
 
 api.add_resource(Item, "/item/<string:name>")
 api.add_resource(ItemList, "/items")
+api.add_resource(UserRegister, "/register")
 
 
 if __name__ == "__main__":
