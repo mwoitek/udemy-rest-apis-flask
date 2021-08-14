@@ -39,19 +39,24 @@ class Item(Resource):
             return {"item": item}
         return {"error": f"Item named {name} does not exist"}, 404
 
-    # @jwt_required()
-    # def post(self, name):
-    #     item = Item.find_item_by_name(name)
-    #     if item:
-    #         return {"error": f"An item named {name} already exists"}, 400
+    @jwt_required()
+    def post(self, name):
+        item = Item.find_by_name(name)
+        if item:
+            return {"error": f"An item named {name} already exists"}, 400
 
-    #     args = Item.parser.parse_args(strict=True)
-    #     item = {
-    #         "name": name,
-    #         "price": args["price"],
-    #     }
-    #     items.append(item)
-    #     return item, 201
+        args = Item.parser.parse_args(strict=True)
+
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+
+        sql_insert = "INSERT INTO items (name, price) VALUES (?, ?)"
+        cur.execute(sql_insert, (name, args["price"]))
+
+        conn.commit()
+        conn.close()
+
+        return {"message": "Item successfully created"}, 201
 
     # @jwt_required()
     # def delete(self, name):
