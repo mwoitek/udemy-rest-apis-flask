@@ -6,6 +6,7 @@ DB_PATH = str(Path(__file__).resolve().parents[2] / "data.sqlite")
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 
+# Users
 cur.execute(
     """
     CREATE TABLE IF NOT EXISTS users (
@@ -15,6 +16,9 @@ cur.execute(
     )
     """
 )
+
+# Items
+cur.execute("CREATE TABLE IF NOT EXISTS items (name TEXT, price REAL)")
 
 conn.commit()
 conn.close()

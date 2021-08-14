@@ -29,21 +29,6 @@ def my_expired_token_callback(jwt_header, jwt_payload):
 
 api = Api(app)
 
-items = [
-    {
-        "name": "Keyboard",
-        "price": 200.0,
-    },
-    {
-        "name": "Mouse",
-        "price": 30.5,
-    },
-    {
-        "name": "Laptop",
-        "price": 3000.0,
-    },
-]
-
 
 @app.route("/login", methods=["POST"])
 def login():
