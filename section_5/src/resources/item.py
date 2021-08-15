@@ -58,18 +58,21 @@ class Item(Resource):
 
         return {"message": "Item successfully created"}, 201
 
-    # @jwt_required()
-    # def delete(self, name):
-    #     item = Item.find_item_by_name(name)
-    #     if item is None:
-    #         return {"error": f"Item named {name} does not exist"}, 404
+    @jwt_required()
+    def delete(self, name):
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
 
-    #     item_idx = items.index(item)
-    #     items.pop(item_idx)
-    #     return {
-    #         "message": "Item successfully removed",
-    #         "item": item,
-    #     }
+        sql_delete = "DELETE FROM items WHERE name = ?"
+        cur.execute(sql_delete, (name,))
+        deleted = cur.rowcount == 1
+
+        conn.commit()
+        conn.close()
+
+        if deleted:
+            return {"message": "Item successfully deleted"}
+        return {"message": f"Item named {name} does not exist"}, 404
 
     # @jwt_required()
     # def put(self, name):
