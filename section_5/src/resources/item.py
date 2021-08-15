@@ -1,10 +1,8 @@
 import sqlite3
-from pathlib import Path
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from flask_restful import reqparse
-
-DB_PATH = str(Path(__file__).resolve().parents[2] / "data.sqlite")
+from cfg import DB_PATH
 
 
 class Item(Resource):

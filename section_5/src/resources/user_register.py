@@ -1,10 +1,8 @@
 import sqlite3
-from pathlib import Path
 from flask_restful import Resource
 from flask_restful import reqparse
+from cfg import DB_PATH
 from user import User
-
-DB_PATH = str(Path(__file__).resolve().parents[2] / "data.sqlite")
 
 
 class UserRegister(Resource):

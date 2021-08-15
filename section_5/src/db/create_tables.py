@@ -1,7 +1,5 @@
 import sqlite3
-from pathlib import Path
-
-DB_PATH = str(Path(__file__).resolve().parents[2] / "data.sqlite")
+from cfg import DB_PATH
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
