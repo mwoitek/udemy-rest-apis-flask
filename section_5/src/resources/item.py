@@ -97,23 +97,34 @@ class Item(Resource):
             return {"message": "Item successfully deleted"}
         return {"message": f"Item named {name} does not exist"}, 404
 
-    # @jwt_required()
-    # def put(self, name):
-    #     args = Item.parser.parse_args(strict=True)
+    @jwt_required()
+    def put(self, name):
+        args = Item.parser.parse_args(strict=True)
 
-    #     item = Item.find_item_by_name(name)
-    #     if item is None:
-    #         # Create item
-    #         item = {
-    #             "name": name,
-    #             "price": args["price"],
-    #         }
-    #         items.append(item)
-    #         return item, 201
+        try:
+            item = Item.find_by_name(name)
+        except Exception:
+            return {"message": "Unable to check if item already exists"}, 500
 
-    #     # Update item
-    #     item.update(args)
-    #     return {
-    #         "message": "Item successfully updated",
-    #         "item": item,
-    #     }
+        # Create item
+        if item is None:
+            try:
+                Item.insert(name, args["price"])
+                return {"message": "Item successfully created"}, 201
+            except Exception:
+                return {"message": "Unable to insert item into database"}, 500
+
+        # Update item
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cur = conn.cursor()
+
+            sql_update = "UPDATE items SET price = ? WHERE name = ?"
+            cur.execute(sql_update, (args["price"], name))
+
+            conn.commit()
+            conn.close()
+
+            return {"message": "Item successfully updated"}
+        except Exception:
+            return {"message": "Unable to update item"}, 500
