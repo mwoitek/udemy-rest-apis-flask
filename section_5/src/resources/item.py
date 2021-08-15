@@ -14,61 +14,84 @@ class Item(Resource):
         "price",
         type=float,
         required=True,
-        help="Item price has to be specified",
+        help="It is required to specify a number as the item price",
     )
 
     @staticmethod
     def find_by_name(name):
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cur = conn.cursor()
 
-        query = "SELECT * FROM items WHERE name = ?"
-        query_results = cur.execute(query, (name,))
-        result = query_results.fetchone()
+            query = "SELECT * FROM items WHERE name = ?"
+            query_results = cur.execute(query, (name,))
+            result = query_results.fetchone()
 
-        conn.close()
-        return result
+            conn.close()
+            return result
+        except Exception as e:
+            raise e
 
     def get(self, name):
-        result = Item.find_by_name(name)
+        try:
+            result = Item.find_by_name(name)
+        except Exception:
+            return {"message": "Unable to get item"}, 500
+
         if result:
             item = {
                 "name": name,
                 "price": result[1],
             }
             return {"item": item}
-        return {"error": f"Item named {name} does not exist"}, 404
+        return {"message": f"Item named {name} does not exist"}, 404
+
+    @staticmethod
+    def insert(name, price):
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cur = conn.cursor()
+
+            sql_insert = "INSERT INTO items (name, price) VALUES (?, ?)"
+            cur.execute(sql_insert, (name, price))
+
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            raise e
 
     @jwt_required()
     def post(self, name):
-        item = Item.find_by_name(name)
+        try:
+            item = Item.find_by_name(name)
+        except Exception:
+            return {"message": "Unable to check if item already exists"}, 500
+
         if item:
-            return {"error": f"An item named {name} already exists"}, 400
+            return {"message": f"An item named {name} already exists"}, 400
 
         args = Item.parser.parse_args(strict=True)
 
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
-
-        sql_insert = "INSERT INTO items (name, price) VALUES (?, ?)"
-        cur.execute(sql_insert, (name, args["price"]))
-
-        conn.commit()
-        conn.close()
-
-        return {"message": "Item successfully created"}, 201
+        try:
+            Item.insert(name, args["price"])
+            return {"message": "Item successfully created"}, 201
+        except Exception:
+            return {"message": "Unable to insert item into database"}, 500
 
     @jwt_required()
     def delete(self, name):
-        conn = sqlite3.connect(DB_PATH)
-        cur = conn.cursor()
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            cur = conn.cursor()
 
-        sql_delete = "DELETE FROM items WHERE name = ?"
-        cur.execute(sql_delete, (name,))
-        deleted = cur.rowcount == 1
+            sql_delete = "DELETE FROM items WHERE name = ?"
+            cur.execute(sql_delete, (name,))
+            deleted = cur.rowcount == 1
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
+        except Exception:
+            return {"message": "Unable to delete item"}, 500
 
         if deleted:
             return {"message": "Item successfully deleted"}
